@@ -80,7 +80,9 @@ CLASS ZCL_ZOV2_DPC_EXT IMPLEMENTATION.
 
 
   method OVCABSET_GET_ENTITY.
-
+    er_entity-ordemid = 1.
+    er_entity-datacriacao = '19700101000000'.
+    er_entity-criadopor = 'Leonardo'.
   endmethod.
 
 
