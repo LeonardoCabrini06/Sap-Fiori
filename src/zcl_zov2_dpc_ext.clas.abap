@@ -129,15 +129,32 @@ CLASS ZCL_ZOV2_DPC_EXT IMPLEMENTATION.
 
 
   method OVCABSET_GET_ENTITY.
-    er_entity-ordemid = 1.
-    er_entity-datacriacao = '19700101000000'.
-    er_entity-criadopor = 'Leonardo'.
   endmethod.
 
 
-  method OVCABSET_GET_ENTITYSET.
+  METHOD ovcabset_get_entityset.
+    DATA lt_cab TYPE STANDARD TABLE OF zov2cab.
+    DATA ls_cab TYPE zov2cab.
+    DATA ls_entityset LIKE LINE OF et_entityset.
 
-  endmethod.
+    SELECT *
+      INTO TABLE lt_cab
+      FROM zov2cab.
+
+    LOOP AT lt_cab INTO ls_cab.
+      CLEAR ls_entityset.
+      MOVE-CORRESPONDING ls_cab TO ls_entityset.
+
+      ls_entityset-criadopor = ls_cab-criacao_usuario.
+
+      CONVERT DATE ls_cab-criacao_data
+        TIME ls_cab-criacao_hora
+        INTO TIME STAMP ls_entityset-datacriacao
+        TIME ZONE sy-zonlo.
+
+      APPEND ls_entityset TO et_entityset.
+    ENDLOOP.
+  ENDMETHOD.
 
 
   method OVCABSET_UPDATE_ENTITY.
@@ -191,9 +208,29 @@ CLASS ZCL_ZOV2_DPC_EXT IMPLEMENTATION.
   endmethod.
 
 
-  method OVITEMSET_GET_ENTITYSET.
+method OVITEMSET_GET_ENTITYSET.
+  DATA: ld_ordemid       TYPE int4.
+  DATA: lt_ordemid_range TYPE RANGE OF int4.
+  DATA: ls_ordemid_range LIKE LINE OF lt_ordemid_range.
+  DATA: ls_key_tab       LIKE LINE OF it_key_tab.
 
-  endmethod.
+  " input
+  READ TABLE it_key_tab INTO ls_key_tab WITH KEY name = 'OrdemId'.
+  IF sy-subrc = 0.
+    ld_ordemid = ls_key_tab-value.
+
+    CLEAR ls_ordemid_range.
+    ls_ordemid_range-sign   = 'I'.
+    ls_ordemid_range-option = 'EQ'.
+    ls_ordemid_range-low    = ld_ordemid.
+    APPEND ls_ordemid_range TO lt_ordemid_range.
+  ENDIF.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE et_entityset
+    FROM zov2item
+   WHERE ordemid IN lt_ordemid_range.
+endmethod.
 
 
   method OVITEMSET_UPDATE_ENTITY.
