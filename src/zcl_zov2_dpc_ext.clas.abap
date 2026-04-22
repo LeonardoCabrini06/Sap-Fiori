@@ -123,9 +123,51 @@ CLASS ZCL_ZOV2_DPC_EXT IMPLEMENTATION.
   ENDMETHOD.
 
 
-  method OVCABSET_DELETE_ENTITY.
+  METHOD ovcabset_delete_entity.
+    DATA: ls_key_tab LIKE LINE OF it_key_tab.
 
-  endmethod.
+    DATA(lo_msg) = me->/iwbep/if_mgw_conv_srv_runtime~get_message_container( ).
+
+    READ TABLE it_key_tab INTO ls_key_tab WITH KEY name = 'OrdemId'.
+    IF sy-subrc <> 0.
+
+      lo_msg->add_message_text_only(
+        iv_msg_type               = 'E'                                      " Message Type - defined by GCS_MESSAGE_TYPE
+        iv_msg_text               = 'OrdemId não informado!'                 " Message Text
+      ).
+
+      RAISE EXCEPTION TYPE /iwbep/cx_mgw_busi_exception
+        EXPORTING
+          message_container = lo_msg.
+    ENDIF.
+
+    DELETE FROM zov2item WHERE ordemid = ls_key_tab-value.
+    IF sy-subrc <> 0.
+      ROLLBACK WORK.
+      lo_msg->add_message_text_only(
+        iv_msg_type               = 'E'                                     " Message Type - defined by GCS_MESSAGE_TYPE
+        iv_msg_text               = 'Erro ao remover itens'                 " Message Text
+      ).
+      RAISE EXCEPTION TYPE /iwbep/cx_mgw_busi_exception
+        EXPORTING
+          message_container = lo_msg.
+    ENDIF.
+
+    DELETE FROM zov2cab WHERE ordemid = ls_key_tab-value.
+    IF sy-subrc <> 0.
+      ROLLBACK WORK.
+      lo_msg->add_message_text_only(
+        iv_msg_type               = 'E'                                         " Message Type - defined by GCS_MESSAGE_TYPE
+        iv_msg_text               = 'Erro ao remover cabeçalho'                 " Message Text
+      ).
+      RAISE EXCEPTION TYPE /iwbep/cx_mgw_busi_exception
+        EXPORTING
+          message_container = lo_msg.
+    ENDIF.
+
+    COMMIT WORK AND WAIT.
+
+  ENDMETHOD.
 
 
 method OVCABSET_GET_ENTITY.
@@ -233,8 +275,6 @@ endmethod.
 
     DATA(lo_msg) = me->/iwbep/if_mgw_conv_srv_runtime~get_message_container( ).
 
-  BREAK-POINT.
-
     io_data_provider->read_entry_data(
       IMPORTING
         es_data = er_entity
@@ -334,9 +374,30 @@ endmethod.
   ENDMETHOD.
 
 
-  method OVITEMSET_DELETE_ENTITY.
+  METHOD ovitemset_delete_entity.
+    DATA: ls_item    TYPE zov2item.
+    DATA: ls_key_tab LIKE LINE OF it_key_tab.
 
-  endmethod.
+    DATA(lo_msg) = me->/iwbep/if_mgw_conv_srv_runtime~get_message_container( ).
+
+    ls_item-ordemid = it_key_tab[ name = 'OrdemId' ]-value.
+    ls_item-itemid  = it_key_tab[ name = 'ItemId' ]-value.
+
+    DELETE FROM zov2item
+     WHERE ordemid = ls_item-ordemid
+       AND itemid  = ls_item-itemid.
+    IF sy-subrc <> 0.
+      lo_msg->add_message_text_only(
+        EXPORTING
+          iv_msg_type = 'E'
+          iv_msg_text = 'Erro ao remover item'
+      ).
+
+      RAISE EXCEPTION TYPE /iwbep/cx_mgw_busi_exception
+        EXPORTING
+          message_container = lo_msg.
+    ENDIF.
+  ENDMETHOD.
 
 
   METHOD ovitemset_get_entity.
