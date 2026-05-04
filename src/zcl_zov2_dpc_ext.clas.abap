@@ -191,8 +191,8 @@ CLASS ZCL_ZOV2_DPC_EXT IMPLEMENTATION.
 
     DATA: ld_ordemid  TYPE zov2cab-ordemid.
     DATA: ld_status   TYPE zov2cab-status.
-    DATA: lt_bapiret2 TYPE STANDARD TABLE OF zcl_zov2_mpc_ext=>ts_mensagem.
-    DATA: ls_bapiret2 TYPE zcl_zov2_mpc_ext=>ts_mensagem.
+    DATA: lt_bapiret2 TYPE STANDARD TABLE OF zcl_zov2_mpc_ext=>menssagem2.
+    DATA: ls_bapiret2 TYPE zcl_zov2_mpc_ext=>menssagem2.
 
     IF iv_action_name = 'ZFI_ATUALIZA_STATUS'.
       ld_ordemid = it_parameter[ name = 'ID_ORDEMID' ]-value.
@@ -204,13 +204,13 @@ CLASS ZCL_ZOV2_DPC_EXT IMPLEMENTATION.
 
       IF sy-subrc = 0.
         CLEAR ls_bapiret2.
-        ls_bapiret2-type     = 'S'.
-        ls_bapiret2-message = |Status da ordem { ld_ordemid } atualizado|.
+        ls_bapiret2-tipo     = 'S'.
+        ls_bapiret2-menssagem = |Status da ordem { ld_ordemid } atualizado|.
         APPEND ls_bapiret2 TO lt_bapiret2.
       ELSE.
         CLEAR ls_bapiret2.
-        ls_bapiret2-type    = 'E'.
-        ls_bapiret2-message = |Erro ao atualizar status da ordem { ld_ordemid }|.
+        ls_bapiret2-tipo    = 'E'.
+        ls_bapiret2-menssagem = |Erro ao atualizar status da ordem { ld_ordemid }|.
         APPEND ls_bapiret2 TO lt_bapiret2.
       ENDIF.
     ENDIF.
