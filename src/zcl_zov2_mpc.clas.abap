@@ -6,6 +6,21 @@ class ZCL_ZOV2_MPC definition
 public section.
 
   types:
+    begin of TS_ZFI_ATUALIZA_STATUS,
+        ID_ORDEMID type I,
+        ID_STATUS type C length 1,
+    end of TS_ZFI_ATUALIZA_STATUS .
+  types:
+   begin of ts_text_element,
+      artifact_name  type c length 40,       " technical name
+      artifact_type  type c length 4,
+      parent_artifact_name type c length 40, " technical name
+      parent_artifact_type type c length 4,
+      text_symbol    type textpoolky,
+   end of ts_text_element .
+  types:
+         tt_text_elements type standard table of ts_text_element with key text_symbol .
+  types:
   begin of TS_OVCAB,
      ORDEMID type I,
      DATACRIACAO type TIMESTAMP,
@@ -18,16 +33,6 @@ public section.
   end of TS_OVCAB .
   types:
 TT_OVCAB type standard table of TS_OVCAB .
-  types:
-   begin of ts_text_element,
-      artifact_name  type c length 40,       " technical name
-      artifact_type  type c length 4,
-      parent_artifact_name type c length 40, " technical name
-      parent_artifact_type type c length 4,
-      text_symbol    type textpoolky,
-   end of ts_text_element .
-  types:
-         tt_text_elements type standard table of ts_text_element with key text_symbol .
   types:
   begin of TS_OVITEM,
      ORDEMID type I,
@@ -93,6 +98,9 @@ private section.
   methods DEFINE_ASSOCIATIONS
     raising
       /IWBEP/CX_MGW_MED_EXCEPTION .
+  methods DEFINE_ACTIONS
+    raising
+      /IWBEP/CX_MGW_MED_EXCEPTION .
 ENDCLASS.
 
 
@@ -115,6 +123,95 @@ define_ovcab( ).
 define_ovitem( ).
 define_mensagem( ).
 define_associations( ).
+define_actions( ).
+  endmethod.
+
+
+  method DEFINE_ACTIONS.
+*&---------------------------------------------------------------------*
+*&           Generated code for the MODEL PROVIDER BASE CLASS         &*
+*&                                                                     &*
+*&  !!!NEVER MODIFY THIS CLASS. IN CASE YOU WANT TO CHANGE THE MODEL  &*
+*&        DO THIS IN THE MODEL PROVIDER SUBCLASS!!!                   &*
+*&                                                                     &*
+*&---------------------------------------------------------------------*
+
+
+data:
+lo_action         type ref to /iwbep/if_mgw_odata_action,                 "#EC NEEDED
+lo_parameter      type ref to /iwbep/if_mgw_odata_parameter.              "#EC NEEDED
+
+***********************************************************************************************************************************
+*   ACTION - ZFI_ATUALIZA_STATUS
+***********************************************************************************************************************************
+
+lo_action = model->create_action( 'ZFI_ATUALIZA_STATUS' ).  "#EC NOTEXT
+*Set return entity type
+lo_action->set_return_entity_type( 'Mensagem' ). "#EC NOTEXT
+* Set return type multiplicity
+lo_action->set_return_multiplicity( 'M' ). "#EC NOTEXT
+***********************************************************************************************************************************
+* Parameters
+***********************************************************************************************************************************
+
+lo_parameter = lo_action->create_input_parameter( iv_parameter_name = 'ID_ORDEMID'    iv_abap_fieldname = 'ID_ORDEMID' ). "#EC NOTEXT
+lo_parameter->/iwbep/if_mgw_odata_property~set_type_edm_int32( ).
+lo_parameter = lo_action->create_input_parameter( iv_parameter_name = 'ID_STATUS'    iv_abap_fieldname = 'ID_STATUS' ). "#EC NOTEXT
+lo_parameter->/iwbep/if_mgw_odata_property~set_type_edm_string( ).
+lo_parameter->set_maxlength( iv_max_length = 1 ). "#EC NOTEXT
+lo_action->bind_input_structure( iv_structure_name  = 'ZCL_ZOV2_MPC=>TS_ZFI_ATUALIZA_STATUS' ). "#EC NOTEXT
+  endmethod.
+
+
+  method DEFINE_ASSOCIATIONS.
+*&---------------------------------------------------------------------*
+*&           Generated code for the MODEL PROVIDER BASE CLASS         &*
+*&                                                                     &*
+*&  !!!NEVER MODIFY THIS CLASS. IN CASE YOU WANT TO CHANGE THE MODEL  &*
+*&        DO THIS IN THE MODEL PROVIDER SUBCLASS!!!                   &*
+*&                                                                     &*
+*&---------------------------------------------------------------------*
+
+
+
+
+data:
+lo_annotation     type ref to /iwbep/if_mgw_odata_annotation,                   "#EC NEEDED
+lo_entity_type    type ref to /iwbep/if_mgw_odata_entity_typ,                   "#EC NEEDED
+lo_association    type ref to /iwbep/if_mgw_odata_assoc,                        "#EC NEEDED
+lo_ref_constraint type ref to /iwbep/if_mgw_odata_ref_constr,                   "#EC NEEDED
+lo_assoc_set      type ref to /iwbep/if_mgw_odata_assoc_set,                    "#EC NEEDED
+lo_nav_property   type ref to /iwbep/if_mgw_odata_nav_prop.                     "#EC NEEDED
+
+***********************************************************************************************************************************
+*   ASSOCIATIONS
+***********************************************************************************************************************************
+
+ lo_association = model->create_association(
+                            iv_association_name = 'CabItem' "#EC NOTEXT
+                            iv_left_type        = 'OvCab' "#EC NOTEXT
+                            iv_right_type       = 'OvItem' "#EC NOTEXT
+                            iv_right_card       = 'M' "#EC NOTEXT
+                            iv_left_card        = '1'  "#EC NOTEXT
+                            iv_def_assoc_set    = abap_false ). "#EC NOTEXT
+* Referential constraint for association - CabItem
+lo_ref_constraint = lo_association->create_ref_constraint( ).
+lo_ref_constraint->add_property( iv_principal_property = 'OrdemId'   iv_dependent_property = 'OrdemId' ). "#EC NOTEXT
+lo_assoc_set = model->create_association_set( iv_association_set_name  = 'CabItemSet'                         "#EC NOTEXT
+                                              iv_left_entity_set_name  = 'OvCabSet'              "#EC NOTEXT
+                                              iv_right_entity_set_name = 'OvItemSet'             "#EC NOTEXT
+                                              iv_association_name      = 'CabItem' ).                                 "#EC NOTEXT
+
+
+***********************************************************************************************************************************
+*   NAVIGATION PROPERTIES
+***********************************************************************************************************************************
+
+* Navigation Properties for entity - OvCab
+lo_entity_type = model->get_entity_type( iv_entity_name = 'OvCab' ). "#EC NOTEXT
+lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'toOVItem' "#EC NOTEXT
+                                                              iv_abap_fieldname = 'TOOVITEM' "#EC NOTEXT
+                                                              iv_association_name = 'CabItem' ). "#EC NOTEXT
   endmethod.
 
 
@@ -663,7 +760,7 @@ lo_entity_set->set_filter_required( abap_false ).
 *&---------------------------------------------------------------------*
 
 
-  CONSTANTS: lc_gen_date_time TYPE timestamp VALUE '20260413170744'.                  "#EC NOTEXT
+  CONSTANTS: lc_gen_date_time TYPE timestamp VALUE '20260504083958'.                  "#EC NOTEXT
   rv_last_modified = super->get_last_modified( ).
   IF rv_last_modified LT lc_gen_date_time.
     rv_last_modified = lc_gen_date_time.
@@ -683,6 +780,7 @@ lo_entity_set->set_filter_required( abap_false ).
 
 DATA:
      ls_text_element TYPE ts_text_element.                                 "#EC NEEDED
+CLEAR ls_text_element.
 
 
 clear ls_text_element.
@@ -899,57 +997,5 @@ ls_text_element-parent_artifact_name   = 'Mensagem'.                            
 ls_text_element-parent_artifact_type   = 'ETYP'.                                       "#EC NOTEXT
 ls_text_element-text_symbol            = '030'.              "#EC NOTEXT
 APPEND ls_text_element TO rt_text_elements.
-  endmethod.
-
-
-  method DEFINE_ASSOCIATIONS.
-*&---------------------------------------------------------------------*
-*&           Generated code for the MODEL PROVIDER BASE CLASS         &*
-*&                                                                     &*
-*&  !!!NEVER MODIFY THIS CLASS. IN CASE YOU WANT TO CHANGE THE MODEL  &*
-*&        DO THIS IN THE MODEL PROVIDER SUBCLASS!!!                   &*
-*&                                                                     &*
-*&---------------------------------------------------------------------*
-
-
-
-
-data:
-lo_annotation     type ref to /iwbep/if_mgw_odata_annotation,                   "#EC NEEDED
-lo_entity_type    type ref to /iwbep/if_mgw_odata_entity_typ,                   "#EC NEEDED
-lo_association    type ref to /iwbep/if_mgw_odata_assoc,                        "#EC NEEDED
-lo_ref_constraint type ref to /iwbep/if_mgw_odata_ref_constr,                   "#EC NEEDED
-lo_assoc_set      type ref to /iwbep/if_mgw_odata_assoc_set,                    "#EC NEEDED
-lo_nav_property   type ref to /iwbep/if_mgw_odata_nav_prop.                     "#EC NEEDED
-
-***********************************************************************************************************************************
-*   ASSOCIATIONS
-***********************************************************************************************************************************
-
- lo_association = model->create_association(
-                            iv_association_name = 'CabItem' "#EC NOTEXT
-                            iv_left_type        = 'OvCab' "#EC NOTEXT
-                            iv_right_type       = 'OvItem' "#EC NOTEXT
-                            iv_right_card       = 'M' "#EC NOTEXT
-                            iv_left_card        = '1'  "#EC NOTEXT
-                            iv_def_assoc_set    = abap_false ). "#EC NOTEXT
-* Referential constraint for association - CabItem
-lo_ref_constraint = lo_association->create_ref_constraint( ).
-lo_ref_constraint->add_property( iv_principal_property = 'OrdemId'   iv_dependent_property = 'OrdemId' ). "#EC NOTEXT
-lo_assoc_set = model->create_association_set( iv_association_set_name  = 'CabItemSet'                         "#EC NOTEXT
-                                              iv_left_entity_set_name  = 'OvCabSet'              "#EC NOTEXT
-                                              iv_right_entity_set_name = 'OvItemSet'             "#EC NOTEXT
-                                              iv_association_name      = 'CabItem' ).                                 "#EC NOTEXT
-
-
-***********************************************************************************************************************************
-*   NAVIGATION PROPERTIES
-***********************************************************************************************************************************
-
-* Navigation Properties for entity - OvCab
-lo_entity_type = model->get_entity_type( iv_entity_name = 'OvCab' ). "#EC NOTEXT
-lo_nav_property = lo_entity_type->create_navigation_property( iv_property_name  = 'toOVItem' "#EC NOTEXT
-                                                              iv_abap_fieldname = 'TOOVITEM' "#EC NOTEXT
-                                                              iv_association_name = 'CabItem' ). "#EC NOTEXT
   endmethod.
 ENDCLASS.
